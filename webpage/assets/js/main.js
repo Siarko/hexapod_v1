@@ -3,13 +3,38 @@ let hexState = false;
 
 let View;
 let Backend;
+let Users = new UsersManager();
 
 window.addEventListener('load', onLoad);
 
 function onLoad(event) {
     View = new ViewLayer();
-    Backend = new BackendServer();
+    Backend = new BackendServer({
+        onOpen: function(e){
+            View.disableAll(false);
+            Backend.send({
+                type: 'tokenCheck'
+            }, null, false)
+        },
+        onClose: function(e){
+            View.disableAll();
+        }
+    });
     Backend.open();
+
+    Backend.setDataHandler("ID", function (data) {
+        Users.setOwnUser(data.data);
+    });
+    Backend.setDataHandler('tokenCheck', function (data) {
+        Users.setCurrentUserId(data.data);
+        if (Users.isUserNone()) {
+            View.setElementStateText(View.useButton, false, "Przejmij kontrolę");
+        } else if (Users.isUserCurrent()) {
+            View.setElementStateText(View.useButton, false, "Oddaj kontrolę");
+        } else {
+            View.setElementStateText(View.useButton, true, "ZABLOKOWANY");
+        }
+    });
 
     initOnButton();
     initUseButton();
@@ -45,7 +70,7 @@ function initOnButton(){
 }
 
 function initUseButton(){
-    View.setUseButtonStateText(true, "Checking");
+    View.setElementStateText(View.useButton, true, "Checking");
     View.useButton.addEventListener('click', function(){
         if(Backend.isUserNone()){
             Backend.send({type: "tokenCheck"}, null, false);

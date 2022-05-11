@@ -17,14 +17,7 @@ class ViewLayer{
         return this;
     }
 
-    setEnButtonStateText(state, text){
-        this.setButtonStateText(state, text, this.enableButton);
-    }
-    setUseButtonStateText(state, text){
-        this.setButtonStateText(state, text, this.useButton);
-    }
-
-    setButtonStateText(state, text, button){
+    setElementStateText(button, state, text){
         button.disabled = state;
         button.innerText = text;
     }
